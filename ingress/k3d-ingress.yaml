@@ -8,7 +8,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /speak-out
+      - path: /
         pathType: Prefix
         backend:
           service:

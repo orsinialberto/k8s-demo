@@ -1,2 +1,14 @@
 server:
   port: 8080
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  datasource:
+    url: jdbc:mysql://mysql:3306/k3d_demo_schema  # url should be equal to mysql container name
+    username: root
+    password: password
+    driver-class-name: com.mysql.jdbc.Driver
+
