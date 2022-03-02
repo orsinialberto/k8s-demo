@@ -107,3 +107,25 @@ curl localhost:8081/speak-out
 curl localhost:8081/actuator/health
 curl localhost:8081/customers 
 ```
+
+## DASHBOARD
+
+1. deploy the dashboard UI
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
+kubectl proxy
+```
+
+2. grant a token
+
+```shell
+kubectl create -f dashboard/sa-dashboard.yml -f dashboard/crb-dashboard.yml
+kubectl -n kubernetes-dashboard describe secret admin-user-token | grep '^token'
+```
+
+3. visit the dashboard
+
+```shell
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/workloads?namespace=default
+```
