@@ -29,8 +29,8 @@ k3d cluster create newcluster --registry-use k3d-myregistry.localhost:12345 --ap
 1. create mysql persistence volume
 
 ```shell
-kubectl apply -f mysql-persistence-volume.yaml
-kubectl apply -f mysql-deployment.yaml
+kubectl apply -f persistence-volume/mysql-persistence-volume.yaml
+kubectl apply -f deployment/mysql-deployment.yaml
 ```
 
 2. create a pod how to run mysql command
@@ -51,6 +51,32 @@ mysql> CREATE TABLE `customer` (
   `version` bigint(20) DEFAULT NULL,
    PRIMARY KEY (`id`)
  ) ENGINE=InnoDB;
+```
+
+## ZOOKEEPER & KAFKA
+
+1. create zookeeper deployment
+
+```shell
+kubectl apply -f deployment/zookeeper-deployment.yaml
+```
+
+2. create zookeeper service
+
+```shell
+kubectl apply -f service/zookeeper-service.yaml
+```
+
+3. create kafka load balancer
+
+```shell
+kubectl apply -f service/kafka-service.yaml
+```
+
+4. create kafka deployment (note KAFKA_ADVERTISED_HOST_NAME & KAFKA_ADVERTISED_PORT should be equal to loadbalancer url and port)
+
+```shell
+kubectl apply -f deployment/kafka-deployment.yaml
 ```
 
 ## WEB-APP
@@ -83,6 +109,7 @@ docker push localhost:12345/web-app:latest
 5. apply k8s deployment file
 
 ```shell 
+cd ../..
 kubectl apply -f deployment/k3d-deployment.yaml 
 kubectl get pods -o wide
 ``` 

@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.example.demo.core.JsonUtil.convertToJsonNode;
+import static com.example.demo.core.util.JsonUtil.convertToJsonNode;
 
 @Entity
 @Table(name = "customer")
@@ -38,7 +38,7 @@ public class Customer {
 
     @PreUpdate
     public void preUpdate() {
-      updatedAt = new Date();
+        updatedAt = new Date();
     }
 
     @PrePersist
@@ -91,9 +91,9 @@ public class Customer {
     public CustomerResource toResource() {
 
         final CustomerResource customerResource = new CustomerResource();
-      customerResource.setId(this.id);
-      customerResource.setBase(convertToJsonNode(base));
-      customerResource.setRegisteredAt(this.registeredAt);
+        customerResource.setId(this.id);
+        customerResource.setBase(convertToJsonNode(base));
+        customerResource.setRegisteredAt(this.registeredAt);
         customerResource.setUpdatedAt(this.updatedAt);
         customerResource.setVersion(null);
 

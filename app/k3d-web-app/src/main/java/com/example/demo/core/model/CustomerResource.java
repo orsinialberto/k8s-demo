@@ -26,12 +26,12 @@ public class CustomerResource {
     }
 
     public JsonNode getBase() {
-    return base;
-  }
+        return base;
+    }
 
     public void setBase(JsonNode base) {
-    this.base = base;
-  }
+        this.base = base;
+    }
 
     public Date getRegisteredAt() {
         return registeredAt;
