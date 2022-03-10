@@ -58,10 +58,10 @@ mysql> CREATE TABLE `customer` (
 1. create cluster kafka
 
 ```shell
-kubectl apply --namespace=kafka -R -f k8s
+kubectl apply --namespace=kafka -R -f kafka
 ```
 
-if this appear:
+If this error appears:
 
 error: unable to recognize "deploy/mykafka.yaml": no matches for kind "Kafka" in version "kafka.strimzi.io/v1beta2"
 
@@ -93,13 +93,23 @@ bin/api-conversion.sh convert-resource --all-namespaces
 bin/api-conversion.sh crd-upgrade --debug
 ```
 
+Example of command: 
+
+```shell
+kubectl get all -n kafka
+
+kubectl -n kafka run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
+
+kubectl -n kafka run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+```
+
 ## WEB-APP
 
 1. create package of java project
 
 ```shell
 cd app/k3d-web-app/
-mvn clean package -DskipTests=true 
+mvn clean package -DskipTests=true
 ```
 
 2. build docker image
@@ -123,7 +133,7 @@ docker push localhost:12345/web-app:latest
 5. apply k8s deployment file
 
 ```shell 
-cd ../..
+cd -
 kubectl apply -f deployment/k3d-deployment.yaml 
 kubectl get pods -o wide
 ``` 
