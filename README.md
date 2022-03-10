@@ -53,30 +53,54 @@ mysql> CREATE TABLE `customer` (
  ) ENGINE=InnoDB;
 ```
 
-## ZOOKEEPER & KAFKA
+## ZOOKEEPER & KAFKA WITH STRIMZI
 
-1. create zookeeper deployment
+1. create cluster kafka
 
 ```shell
-kubectl apply -f deployment/zookeeper-deployment.yaml
+kubectl apply --namespace=kafka -R -f kafka
 ```
 
-2. create zookeeper service
+If this error appears:
+
+error: unable to recognize "deploy/mykafka.yaml": no matches for kind "Kafka" in version "kafka.strimzi.io/v1beta2"
+
+follow this command:
 
 ```shell
-kubectl apply -f service/zookeeper-service.yaml
+cd ~/Downloads
+wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/strimzi-0.22.1.tar.gz
+tar xzvf strimzi-0.22.1.tar.gz
+cd ./strimzi-0.22.1/install
+
+kubectl replace -f ./cluster-operator/
+kubectl replace -f ./strimzi-admin/
+kubectl replace -f ./topic-operator/
+kubectl replace -f ./user-operator/
+
+# is there `v1beta2` support?
+kubectl get crd kafkas.kafka.strimzi.io -o jsonpath="{.spec.versions[*].name}{'\n'}"
+v1beta2 v1beta1 v1alpha1
+
+wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/api-conversion-0.22.1.tar.gz
+tar xzvf api-conversion-0.22.1.tar.gz
+cd ./api-conversion-0.22.1
+
+# convert existing Strimzi managed resources to `v1beta2`
+bin/api-conversion.sh convert-resource --all-namespaces
+
+# Upgrading CRDs to v1beta2
+bin/api-conversion.sh crd-upgrade --debug
 ```
 
-3. create kafka load balancer
+Example of command: 
 
 ```shell
-kubectl apply -f service/kafka-service.yaml
-```
+kubectl get all -n kafka
 
-4. create kafka deployment (note KAFKA_ADVERTISED_HOST_NAME & KAFKA_ADVERTISED_PORT should be equal to loadbalancer url and port)
+kubectl -n kafka run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
 
-```shell
-kubectl apply -f deployment/kafka-deployment.yaml
+kubectl -n kafka run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 
 ## WEB-APP
@@ -85,7 +109,7 @@ kubectl apply -f deployment/kafka-deployment.yaml
 
 ```shell
 cd app/k3d-web-app/
-mvn clean package -DskipTests=true 
+mvn clean package -DskipTests=true
 ```
 
 2. build docker image
@@ -109,7 +133,7 @@ docker push localhost:12345/web-app:latest
 5. apply k8s deployment file
 
 ```shell 
-cd ../..
+cd -
 kubectl apply -f deployment/k3d-deployment.yaml 
 kubectl get pods -o wide
 ``` 
