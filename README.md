@@ -29,8 +29,12 @@ k3d cluster create newcluster --registry-use k3d-myregistry.localhost:12345 --ap
 1. create mysql persistence volume
 
 ```shell
-kubectl apply -f persistence-volume/mysql-persistence-volume.yaml
-kubectl apply -f deployment/mysql-deployment.yaml
+kubectl apply -f mysql/01-mysql-persistence-volume.yaml
+kubectl apply -f mysql/02-mysql-deployment.yaml
+
+or 
+
+kubectl apply -f mysql
 ```
 
 2. create a pod how to run mysql command
@@ -86,11 +90,17 @@ wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/
 tar xzvf api-conversion-0.22.1.tar.gz
 cd ./api-conversion-0.22.1
 
-# convert existing Strimzi managed resources to `v1beta2`
+# convert existing Strimzi managed resources to `v1beta2`.
+# don't worry if some error appears
 bin/api-conversion.sh convert-resource --all-namespaces
 
 # Upgrading CRDs to v1beta2
+# don't worry if some error appears
 bin/api-conversion.sh crd-upgrade --debug
+
+kubectl delete namespace kafka
+
+kubectl apply --namespace=kafka -R -f kafka
 ```
 
 Example of command: 
@@ -134,21 +144,21 @@ docker push localhost:12345/web-app:latest
 
 ```shell 
 cd -
-kubectl apply -f deployment/k3d-deployment.yaml 
+kubectl apply -f web-app/01-demo-albe-deployment.yaml 
 kubectl get pods -o wide
 ``` 
 
 6.  apply k8s service file
 
 ```shell
-kubectl apply -f service/k3d-service.yaml
+kubectl apply -f web-app/02-demo-albe-service.yaml
 kubectl describe svc demo-albe
 ```
 
 7. apply k8s ingress
 
 ```shell
-kubectl apply -f ingress/k3d-ingress.yaml
+kubectl apply -f web-app/03-demo-albe-ingress.yaml
 kubectl describe ingress demo-albe
 ```
 8.  try to use web application
