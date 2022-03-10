@@ -53,30 +53,44 @@ mysql> CREATE TABLE `customer` (
  ) ENGINE=InnoDB;
 ```
 
-## ZOOKEEPER & KAFKA
+## ZOOKEEPER & KAFKA WITH STRIMZI
 
-1. create zookeeper deployment
+1. create cluster kafka
 
 ```shell
-kubectl apply -f deployment/zookeeper-deployment.yaml
+kubectl apply --namespace=kafka -R -f k8s
 ```
 
-2. create zookeeper service
+if this appear:
+
+error: unable to recognize "deploy/mykafka.yaml": no matches for kind "Kafka" in version "kafka.strimzi.io/v1beta2"
+
+follow this command:
 
 ```shell
-kubectl apply -f service/zookeeper-service.yaml
-```
+cd ~/Downloads
+wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/strimzi-0.22.1.tar.gz
+tar xzvf strimzi-0.22.1.tar.gz
+cd ./strimzi-0.22.1/install
 
-3. create kafka load balancer
+kubectl replace -f ./cluster-operator/
+kubectl replace -f ./strimzi-admin/
+kubectl replace -f ./topic-operator/
+kubectl replace -f ./user-operator/
 
-```shell
-kubectl apply -f service/kafka-service.yaml
-```
+# is there `v1beta2` support?
+kubectl get crd kafkas.kafka.strimzi.io -o jsonpath="{.spec.versions[*].name}{'\n'}"
+v1beta2 v1beta1 v1alpha1
 
-4. create kafka deployment (note KAFKA_ADVERTISED_HOST_NAME & KAFKA_ADVERTISED_PORT should be equal to loadbalancer url and port)
+wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/api-conversion-0.22.1.tar.gz
+tar xzvf api-conversion-0.22.1.tar.gz
+cd ./api-conversion-0.22.1
 
-```shell
-kubectl apply -f deployment/kafka-deployment.yaml
+# convert existing Strimzi managed resources to `v1beta2`
+bin/api-conversion.sh convert-resource --all-namespaces
+
+# Upgrading CRDs to v1beta2
+bin/api-conversion.sh crd-upgrade --debug
 ```
 
 ## WEB-APP
