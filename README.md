@@ -29,17 +29,14 @@ k3d cluster create newcluster --registry-use k3d-myregistry.localhost:12345 --ap
 1. create mysql persistence volume
 
 ```shell
-kubectl apply -f mysql/01-mysql-persistence-volume.yaml
-kubectl apply -f mysql/02-mysql-deployment.yaml
-
-or 
-
-kubectl apply -f mysql
+kubectl apply -f mysql/00-mysql-namespace.yml
+kubectl apply -f mysql/01-mysql-persistence-volume.yaml -n mysql
+kubectl apply -f mysql/02-mysql-deployment.yaml -n mysql  
 ```
 
 2. create a pod how to run mysql command
 ```shell
-kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql -ppassword
+kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql.mysql -ppassword
 ```
 
 3. create schema and table necessary to run web-app

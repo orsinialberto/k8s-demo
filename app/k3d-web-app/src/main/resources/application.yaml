@@ -7,7 +7,7 @@ spring:
       ddl-auto: update
     show-sql: false
   datasource:
-    url: jdbc:mysql://mysql:3306/k3d_demo_schema  # url should be equal to mysql container name
+    url: jdbc:mysql://mysql.mysql:3306/k3d_demo_schema  # url: namespace.containerName:port
     username: root
     password: password
     driver-class-name: com.mysql.jdbc.Driver
