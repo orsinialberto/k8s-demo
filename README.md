@@ -56,47 +56,17 @@ mysql> CREATE TABLE `customer` (
 
 ## ZOOKEEPER & KAFKA WITH STRIMZI
 
+Prerequisites:
+
+- helm is required
+
+```shell
+snap install helm --classic
+```
+
 1. create cluster kafka
 
 ```shell
-kubectl apply --namespace=kafka -R -f kafka
-```
-
-If this error appears:
-
-error: unable to recognize "deploy/mykafka.yaml": no matches for kind "Kafka" in version "kafka.strimzi.io/v1beta2"
-
-follow this command:
-
-```shell
-cd ~/Downloads
-wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/strimzi-0.22.1.tar.gz
-tar xzvf strimzi-0.22.1.tar.gz
-cd ./strimzi-0.22.1/install
-
-kubectl replace -f ./cluster-operator/
-kubectl replace -f ./strimzi-admin/
-kubectl replace -f ./topic-operator/
-kubectl replace -f ./user-operator/
-
-# is there `v1beta2` support?
-kubectl get crd kafkas.kafka.strimzi.io -o jsonpath="{.spec.versions[*].name}{'\n'}"
-v1beta2 v1beta1 v1alpha1
-
-wget https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.22.1/api-conversion-0.22.1.tar.gz
-tar xzvf api-conversion-0.22.1.tar.gz
-cd ./api-conversion-0.22.1
-
-# convert existing Strimzi managed resources to `v1beta2`.
-# don't worry if some error appears
-bin/api-conversion.sh convert-resource --all-namespaces
-
-# Upgrading CRDs to v1beta2
-# don't worry if some error appears
-bin/api-conversion.sh crd-upgrade --debug
-
-kubectl delete namespace kafka
-
 kubectl apply --namespace=kafka -R -f kafka
 ```
 
