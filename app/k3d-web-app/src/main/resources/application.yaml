@@ -7,7 +7,7 @@ spring:
       ddl-auto: update
     show-sql: false
   datasource:
-    url: jdbc:mysql://mysql.mysql:3306/k3d_demo_schema  # url: namespace.containerName:port
+    url: jdbc:mysql://mysql.mysql:3306/k3d_demo_schema  # url: service-name.namespace:port
     username: root
     password: password
     driver-class-name: com.mysql.jdbc.Driver
@@ -17,8 +17,19 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable:
+        auto:
+          commit: false
     producer:
       bootstrap-servers: my-cluster-kafka-bootstrap.kafka:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+elasticsearch:
+  url: elasticsearch-es-http.kube-elastic
+  port: 9200
+  username: elastic
+  password: eoSKSW289j1202J9GoUct69n
+  key-store-file: "/tmp/elastic-certificates.p12"
+  cert-file-password: ""
 
