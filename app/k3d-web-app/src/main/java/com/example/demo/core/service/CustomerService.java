@@ -1,13 +1,13 @@
 package com.example.demo.core.service;
 
 import com.example.demo.backend.elasticsearch.ElasticsearchClient;
-import com.example.demo.core.model.Action;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.model.Customer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,9 +23,10 @@ import static com.example.demo.core.util.JsonUtil.OBJECT_MAPPER;
 public class CustomerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
-
     private final CustomerRepository customerRepository;
     private final ElasticsearchClient elasticsearchClient;
+    @Value("${elasticsearch.index-name}")
+    private String indexName;
 
     public CustomerService(final CustomerRepository customerRepository, final ElasticsearchClient elasticsearchClient) {
         this.customerRepository = customerRepository;
@@ -41,7 +42,7 @@ public class CustomerService {
         LOGGER.info("saved {} customers", ((Collection<?>) iterable).size());
 
         final String body = StreamSupport.stream(iterable.spliterator(), true)
-                .map(customer -> convertCustomer(customer, INDEX))
+                .map(customer -> convertCustomer(customer))
                 .collect(Collectors.joining());
 
         try {
@@ -75,13 +76,6 @@ public class CustomerService {
         return customer;
     }
 
-    public void deleteAll() {
-
-        customerRepository.deleteAll();
-
-        LOGGER.info("deleted all customers");
-    }
-
     public void deleteById(final String id) {
 
         customerRepository.deleteById(id);
@@ -89,16 +83,16 @@ public class CustomerService {
         LOGGER.info("deleted customers {}", id);
     }
 
-    private String convertCustomer(final Customer customer, final Action action) {
+    private String convertCustomer(final Customer customer) {
 
         final ObjectNode actionNode = OBJECT_MAPPER.createObjectNode();
 
-        final ObjectNode actionProperties = actionNode.putObject(action.toString().toLowerCase());
-        actionProperties.put("_index", "customer");
+        final ObjectNode actionProperties = actionNode.putObject(INDEX.toString().toLowerCase());
+        actionProperties.put("_index", indexName);
         actionProperties.put("_id", customer.getId());
 
         final JsonNode sourceNode = OBJECT_MAPPER.valueToTree(customer);
 
-        return action.equals(INDEX) ? actionNode + "\n" + sourceNode + "\n" : actionNode + "\n";
+        return actionNode + "\n" + sourceNode + "\n";
     }
 }

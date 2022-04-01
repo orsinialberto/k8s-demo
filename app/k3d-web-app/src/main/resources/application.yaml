@@ -25,6 +25,16 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+camel:
+  springboot:
+    name: web-app demo
+  health:
+    indicator:
+      enabled: true
+    check:
+      indicator:
+        enabled: false
+
 elasticsearch:
   url: elasticsearch-es-http.kube-elastic
   port: 9200
@@ -32,4 +42,5 @@ elasticsearch:
   password: eoSKSW289j1202J9GoUct69n # change with: kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
   key-store-file: "/tmp/elastic-certificates.p12"
   cert-file-password: ""
+  index-name: customer
 

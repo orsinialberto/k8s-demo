@@ -57,6 +57,7 @@ public class ElasticsearchConfiguration {
 
     /**
      * Elasticsearch admin client for elasticsearch cluster.
+     *
      * @return ElasticsearchClient
      */
     @Bean
@@ -80,6 +81,7 @@ public class ElasticsearchConfiguration {
 
     /**
      * A connection manager for elasticsearch cluster security.
+     *
      * @return PoolingNHttpClientConnectionManager
      */
     private PoolingNHttpClientConnectionManager connectionManager() {

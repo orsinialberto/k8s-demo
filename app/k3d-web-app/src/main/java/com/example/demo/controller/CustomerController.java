@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
-import com.example.demo.backend.kafka.Producer;
+import com.example.demo.backend.activemq.ProducerAmq;
+import com.example.demo.backend.kafka.ProducerKafka;
 import com.example.demo.core.model.CustomerResource;
 import com.example.demo.core.service.CustomerService;
 import com.example.demo.repository.model.Customer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +20,17 @@ import static java.util.stream.Collectors.toList;
 public class CustomerController {
 
     private final CustomerService customerService;
-    private final Producer producer;
+    private final ProducerKafka producerKafka;
+    private final ProducerAmq producerAmq;
 
     public CustomerController(
             final CustomerService customerService,
-            final Producer producer
+            final ProducerKafka producerKafka,
+            final ProducerAmq producerAmq
     ) {
         this.customerService = customerService;
-        this.producer = producer;
+        this.producerKafka = producerKafka;
+        this.producerAmq = producerAmq;
     }
 
     @PostMapping
@@ -36,7 +41,7 @@ public class CustomerController {
         final String base = convertToString(body);
         final Customer customer = new Customer(base);
 
-        producer.sendMessageToTopic(customer, "customer");
+        producerKafka.sendMessageToTopic(customer, "customer");
 
         return customer.toResource();
     }
@@ -57,9 +62,9 @@ public class CustomerController {
     }
 
     @DeleteMapping
-    public void deleteAll() {
+    public void deleteAll() throws JsonProcessingException {
 
-        customerService.deleteAll();
+        producerAmq.sendMessageToQueue("activemq:cleaner", "DELETE_ALL");
     }
 
     @DeleteMapping(value = "/{id}")

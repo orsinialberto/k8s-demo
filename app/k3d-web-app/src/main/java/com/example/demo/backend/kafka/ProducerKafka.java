@@ -8,12 +8,12 @@ import static com.example.demo.core.util.JsonUtil.convertToString;
 import static java.util.Objects.requireNonNull;
 
 @Service
-public class Producer {
+public class ProducerKafka {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
-    public Producer(final KafkaTemplate<String, String> kafkaTemplate) {
+    public ProducerKafka(final KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
