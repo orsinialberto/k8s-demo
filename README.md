@@ -123,6 +123,7 @@ mv elastic-certificates.p12 app/k3d-web-app/elasticsearch/
 kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
 
 # copy password in web-app application.yml (property elasticsearch.password)
+# create an index called 'customer' which is necessary for web-app execution
 ```
 
 2. Create Kibana client

@@ -15,7 +15,6 @@ import org.apache.http.nio.conn.NoopIOSessionStrategy;
 import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
-import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +25,6 @@ import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -95,25 +93,16 @@ public class ElasticsearchConfiguration {
 
             final ConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(
                     ioReactorConfig,
-                    threadFactory -> new Thread(threadFactory, String.format(IO_DISPATCHER_NAME_FORMAT, ioDispatcherNumber.getAndIncrement()))
+                    threadFactory -> new Thread(
+                            threadFactory,
+                            String.format(IO_DISPATCHER_NAME_FORMAT, ioDispatcherNumber.getAndIncrement())
+                    )
             );
 
-            Path trustStorePath = Paths.get(keyStoreFile);
-            Path keyStorePath = Paths.get(keyStoreFile);
+            final KeyStore keyStore = KeyStore.getInstance("pkcs12");
 
-            KeyStore trustStore = KeyStore.getInstance("pkcs12");
-            KeyStore keyStore = KeyStore.getInstance("pkcs12");
-
-            try (InputStream is = Files.newInputStream(trustStorePath)) {
-                trustStore.load(is, certFilePassword.toCharArray());
-            } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
-
-            try (InputStream is = Files.newInputStream(keyStorePath)) {
+            try (final InputStream is = Files.newInputStream(Paths.get(keyStoreFile))) {
                 keyStore.load(is, certFilePassword.toCharArray());
-            } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
             }
 
             final SSLContext sslcontext = SSLContexts.custom()
@@ -121,13 +110,11 @@ public class ElasticsearchConfiguration {
                     .loadKeyMaterial(keyStore, certFilePassword.toCharArray())
                     .build();
 
-            final DefaultHostnameVerifier hostnameVerifier = new DefaultHostnameVerifier(PublicSuffixMatcherLoader.getDefault());
-
             final SSLIOSessionStrategy sslStrategy = new SSLIOSessionStrategy(
                     sslcontext,
                     null,
                     null,
-                    hostnameVerifier
+                    new DefaultHostnameVerifier(PublicSuffixMatcherLoader.getDefault())
             );
 
             final Registry<SchemeIOSessionStrategy> ioSessionFactoryRegistry = RegistryBuilder.<SchemeIOSessionStrategy>create()
@@ -137,7 +124,7 @@ public class ElasticsearchConfiguration {
 
             return new PoolingNHttpClientConnectionManager(ioReactor, ioSessionFactoryRegistry);
 
-        } catch (IOReactorException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException e) {
+        } catch (final KeyStoreException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException | CertificateException | IOException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -145,7 +132,6 @@ public class ElasticsearchConfiguration {
     private BasicCredentialsProvider credentialsProvider() {
 
         final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(userName, password);
-
         final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, credentials);
 
