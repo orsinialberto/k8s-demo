@@ -59,6 +59,7 @@ mysql> CREATE TABLE `customer` (
  ) ENGINE=InnoDB;
  mysql> exit
 ```
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/mysql.png)
 
 ## ZOOKEEPER & KAFKA WITH STRIMZI
 
@@ -89,6 +90,7 @@ kubectl -n kafka run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0
 
 kubectl -n kafka run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kafka.png)
 
 ## ELASTICSEARCH
 
@@ -133,6 +135,19 @@ kubectl -n kube-elastic apply -f elasticsearch/kibana.yml
 kubectl -n kube-elastic port-forward service/kibana-kb-http 5601
 kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 ```
+
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kube-elastic.png)
+
+## ACTIVE MQ 
+
+1. Create cluster ActiveMq
+
+```shell
+kubectl apply -f activeMq/01_namespace.yml
+kubectl -n kube-amq apply -f activeMq/02_service.yml
+kubectl -n kube-amq apply -f activeMq/03_deployment.yml
+```
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kube-amq.png)
 
 ## WEB-APP
 
@@ -189,6 +204,7 @@ curl localhost:8081/speak-out
 curl localhost:8081/actuator/health
 curl localhost:8081/customers 
 ```
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/default.png)
 
 ## DASHBOARD
 
