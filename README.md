@@ -151,53 +151,38 @@ kubectl -n kube-amq apply -f activeMq/03_deployment.yml
 
 ## WEB-APP
 
-1. create package of java project
+1. create image of the java project
 
 ```shell
+# create package of java project
 cd app/k3d-web-app/
 mvn clean package -DskipTests=true
-```
 
-2. build docker image
-
-```shell
+# build docker image
 docker build -t  aorsini/web-app . 
-```
 
-3. tag docker image as follow
-
-```shell 
+# tag docker image 
 docker tag aorsini/web-app:latest localhost:12345/web-app:latest 
-```
 
-4. push image to custom repository
-
-```shell 
+# push image to the repository
 docker push localhost:12345/web-app:latest 
 ```
 
-5. apply k8s deployment file
+2. create web-app cluster
 
 ```shell 
+# create a namespace
+# create web-app pod
+# expose web-app in cluster by service
+# expose web-app out of cluster by ingress
 cd -
-kubectl apply -f web-app/01-demo-albe-deployment.yaml 
-kubectl get pods -o wide
+kubectl apply -f app/k8s/web-app.yaml 
+
+kubectl -n web-app-ns get all
+kubectl -n web-app-ns get ingress
 ``` 
 
-6.  apply k8s service file
-
-```shell
-kubectl apply -f web-app/02-demo-albe-service.yaml
-kubectl describe svc demo-albe
-```
-
-7. apply k8s ingress
-
-```shell
-kubectl apply -f web-app/03-demo-albe-ingress.yaml
-kubectl describe ingress demo-albe
-```
-8.  try to use web application
+3.  try to use web application
 
 ```shell 
 curl localhost:8081/speak-out
