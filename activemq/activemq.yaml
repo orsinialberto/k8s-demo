@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: activemq-ns
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemq
+  namespace: activemq-ns
+  labels:
+    app: activemq
+spec:
+  selector:
+    app: activemq
+  ports:
+  - name: dashboard
+    port: 8161
+    targetPort: 8161
+    protocol: TCP
+  - name: openwire
+    port: 61616
+    targetPort: 61616
+    protocol: TCP
+  - name: amqp
+    port: 5672
+    targetPort: 5672
+    protocol: TCP
+  - name: stomp
+    port: 61613
+    targetPort: 61613
+    protocol: TCP
+  - name: mqtt
+    port: 1883
+    targetPort: 1883
+    protocol: TCP
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activemq
+  namespace: activemq-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: activemq
+  template:
+    metadata:
+      labels:
+        app: activemq
+    spec:
+      containers:
+      - name: activemq
+        image: rmohr/activemq:5.15.9
+        ports:
+        - containerPort: 61616
+          name: jmx
+          protocol: TCP
+        - containerPort: 8161
+          name: dashboard
+          protocol: TCP
+        - containerPort: 61616
+          name: openwire
+          protocol: TCP
+        - containerPort: 5672
+          name: amqp
+          protocol: TCP
+        - containerPort: 61613
+          name: stomp
+          protocol: TCP
+        - containerPort: 1883
+          name: mqtt
+          protocol: TCP

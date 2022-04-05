@@ -143,9 +143,9 @@ kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o=jsonpath='{.
 1. Create cluster ActiveMq
 
 ```shell
-kubectl apply -f activeMq/01_namespace.yml
-kubectl -n kube-amq apply -f activeMq/02_service.yml
-kubectl -n kube-amq apply -f activeMq/03_deployment.yml
+kubectl apply -f activemq/activemq.yaml
+
+kubectl -n activemq-ns  get all
 ```
 ![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kube-amq.png)
 
@@ -173,8 +173,8 @@ docker push localhost:12345/web-app:latest
 ```shell 
 # create a namespace
 # create web-app pod
-# expose web-app in cluster by service
-# expose web-app out of cluster by ingress
+# expose web-app on port 8080 in cluster with service
+# expose web-app on port 80 out of the cluster with ingress (k3d map port 8081:80)
 cd -
 kubectl apply -f app/k8s/web-app.yaml 
 
