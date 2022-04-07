@@ -2,4 +2,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kube-elastic
+  name: elasticsearch-ns

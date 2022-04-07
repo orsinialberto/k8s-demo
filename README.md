@@ -1,6 +1,6 @@
 # KUBERNETES DEMO
 
-An example of how to deploy a web-app, connected to mysql, kafka and elasticsearch in k8s.
+An example of how to deploy a web-app, connected to mysql, kafka, elasticsearch and activemq in k8s.
 
 ## K3D
 
@@ -10,15 +10,10 @@ Create a local registry where to save web-app image. Then create k8s cluster wit
 
 ```shell 
 k3d registry create myregistry.localhost --port 12345 
+127.0.0.1 k3d-myregistry.localhost 
 ```
 
-2. Add the following line to /etc/hosts file to use k3d registry into k3d cluster 
-
-```shell 
-127.0.0.1 k3d-myregistry.localhost 
-``` 
-
-3. Create k8s cluster with k3d: add the registry to use and the loadbalancer mapping port (8081:80)
+1. Create k8s cluster with k3d: add the registry to use and the loadbalancer mapping port (8081:80)
 
 ```shell 
 k3d cluster create newcluster --registry-use k3d-myregistry.localhost:12345 --api-port 6550 -p "8081:80@loadbalancer" --agents 2 
@@ -34,14 +29,14 @@ Create mysql cluster as explained in this page https://kubernetes.io/docs/tasks/
 
 ```shell
 kubectl apply -f mysql/00-mysql-namespace.yml
-kubectl -n mysql apply -f mysql/01-mysql-persistence-volume.yaml
-kubectl -n mysql apply -f mysql/02-mysql-deployment.yaml 
-kubectl -n mysql get all
+kubectl -n mysql-ns apply -f mysql/01-mysql-persistence-volume.yaml
+kubectl -n mysql-ns apply -f mysql/02-mysql-deployment.yaml 
+kubectl -n mysql-ns get all
 ```
 
 2. create a pod how to run mysql cli
 ```shell
-kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql.mysql -ppassword
+kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql.mysql-ns -proot
 ```
 
 3. create schema and table necessary to run web-app
@@ -63,36 +58,24 @@ mysql> CREATE TABLE `customer` (
 
 ## ZOOKEEPER & KAFKA WITH STRIMZI
 
-Prerequisites:
-
-- helm is required
-
-```shell
-snap install helm --classic
-
-#or 
-
-brew install helm
-```
-
 1. create cluster kafka
 
 ```shell
-kubectl apply --namespace=kafka -R -f kafka
+kubectl apply --namespace=kafka-ns -R -f kafka
 ```
 
 Example of command: 
 
 ```shell
-kubectl -n kafka get all
+kubectl -n kafka-ns get all
 
-kubectl -n kafka run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
+kubectl -n kafka-ns run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
 
-kubectl -n kafka run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+kubectl -n kafka-ns run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 ![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kafka.png)
 
-## ELASTICSEARCH
+## ELASTICSEARCH 7.6.2
 
 Create elasticsearch cluster as explained in this page https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html
 
@@ -109,20 +92,20 @@ kubectl -n elastic-system logs -f statefulset.apps/elastic-operator
 # create cluster
 
 kubectl apply -f elasticsearch/01_namespace.yml
-kubectl -n kube-elastic apply -f elasticsearch/02_elasticsearch.yml
-kubectl -n kube-elastic get elasticsearch
+kubectl -n elasticsearch-ns apply -f elasticsearch/02_elasticsearch.yml
+kubectl -n elasticsearch-ns get elasticsearch
 
 # generate certificate for web app
 
-kubectl -n kube-elastic exec -it elasticsearch-es-default-0 -- /bin/bash
+kubectl -n elasticsearch-ns exec -it elasticsearch-es-default-0 -- /bin/bash
 ./bin/elasticsearch-certutil cert --ca-cert /usr/share/elasticsearch/config/http-certs/ca.crt --ca-key /usr/share/elasticsearch/config/http-certs/tls.key cert --out /tmp/elastic-certificates.p12 --pass ""
 exit
 
 # update web-app config with certificate and password
 
-kubectl cp kube-elastic/elasticsearch-es-default-0:/tmp/elastic-certificates.p12 elastic-certificates.p12
+kubectl cp elasticsearch-ns/elasticsearch-es-default-0:/tmp/elastic-certificates.p12 elastic-certificates.p12
 mv elastic-certificates.p12 app/k3d-web-app/elasticsearch/
-kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
+kubectl -n elasticsearch-ns get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
 
 # copy password in web-app application.yml (property elasticsearch.password)
 # create an index called 'customer' which is necessary for web-app execution
@@ -131,14 +114,14 @@ kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o go-template=
 2. Create Kibana client
 
 ```shell
-kubectl -n kube-elastic apply -f elasticsearch/kibana.yml
-kubectl -n kube-elastic port-forward service/kibana-kb-http 5601
-kubectl -n kube-elastic get secret elasticsearch-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
+kubectl -n elasticsearch-ns apply -f elasticsearch/kibana.yml
+kubectl -n elasticsearch-ns port-forward service/kibana-kb-http 5601
+kubectl -n elasticsearch-ns get secret elasticsearch-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 ```
 
 ![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kube-elastic.png)
 
-## ACTIVE MQ 
+## ACTIVE MQ 5.15.9
 
 1. Create cluster ActiveMq
 
