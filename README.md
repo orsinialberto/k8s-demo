@@ -54,7 +54,7 @@ mysql> CREATE TABLE `customer` (
  ) ENGINE=InnoDB;
  mysql> exit
 ```
-![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/mysql.png)
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/mysql-ns.png)
 
 ## ZOOKEEPER & KAFKA WITH STRIMZI
 
@@ -73,7 +73,7 @@ kubectl -n kafka-ns run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.
 
 kubectl -n kafka-ns run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
-![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kafka.png)
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kafka-ns.png)
 
 ## ELASTICSEARCH 7.6.2
 
@@ -119,7 +119,7 @@ kubectl -n elasticsearch-ns port-forward service/kibana-kb-http 5601
 kubectl -n elasticsearch-ns get secret elasticsearch-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 ```
 
-![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kube-elastic.png)
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/elasticsearch-ns.png)
 
 ## ACTIVE MQ 5.15.9
 
@@ -130,7 +130,7 @@ kubectl apply -f activemq/activemq.yaml
 
 kubectl -n activemq-ns  get all
 ```
-![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/kube-amq.png)
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/activemq-ns.png)
 
 ## WEB-APP
 
@@ -172,7 +172,7 @@ curl localhost:8081/speak-out
 curl localhost:8081/actuator/health
 curl localhost:8081/customers 
 ```
-![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/default.png)
+![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/web-app-ns.png)
 
 ## DASHBOARD
 
