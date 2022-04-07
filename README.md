@@ -1,10 +1,10 @@
-# KUBERNETES DEMO
+# KUBERNETES
 
-An example of how to deploy a web-app, connected to mysql, kafka, elasticsearch and activemq in k8s.
+Example of how to deploy a web-app which use mysql, kafka, elasticsearch and activemq in k8s.
 
 ## K3D
 
-Create a local registry where to save web-app image. Then create k8s cluster with k3d
+Create a local registry where web-app image will be saved.
 
 1. Create custom registry with k3d*
 
@@ -13,7 +13,9 @@ k3d registry create myregistry.localhost --port 12345
 127.0.0.1 k3d-myregistry.localhost 
 ```
 
-1. Create k8s cluster with k3d: add the registry to use and the loadbalancer mapping port (8081:80)
+Create k8s cluster.
+
+1. Create k8s cluster with k3d: add the registry and the loadbalancer mapping port (8081:80)
 
 ```shell 
 k3d cluster create newcluster --registry-use k3d-myregistry.localhost:12345 --api-port 6550 -p "8081:80@loadbalancer" --agents 2 
@@ -23,7 +25,7 @@ k3d cluster create newcluster --registry-use k3d-myregistry.localhost:12345 --ap
 
 ## MYSQL 5.6
 
-Create mysql cluster as explained in this page https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/
+Create mysql cluster
 
 1. create mysql persistence volume and mysql deployment
 
@@ -58,17 +60,16 @@ mysql> CREATE TABLE `customer` (
 
 ## ZOOKEEPER & KAFKA WITH STRIMZI
 
-1. create cluster kafka
+Create cluster kafka
 
 ```shell
 kubectl apply --namespace=kafka-ns -R -f kafka
+kubectl -n kafka-ns get all
 ```
 
 Example of command: 
 
 ```shell
-kubectl -n kafka-ns get all
-
 kubectl -n kafka-ns run kafka-producer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
 
 kubectl -n kafka-ns run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
@@ -77,12 +78,9 @@ kubectl -n kafka-ns run kafka-consumer -ti --image=strimzi/kafka:0.17.0-kafka-2.
 
 ## ELASTICSEARCH 7.6.2
 
-Create elasticsearch cluster as explained in this page https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html
-
-1. Create elasticsearch cluster
+Create elasticsearch cluster
    
 ```shell
-
 # create operator
 
 kubectl create -f https://download.elastic.co/downloads/eck/2.1.0/crds.yaml
@@ -111,7 +109,7 @@ kubectl -n elasticsearch-ns get secret elasticsearch-es-elastic-user -o go-templ
 # create an index called 'customer' which is necessary for web-app execution
 ```
 
-2. Create Kibana client
+Create Kibana client
 
 ```shell
 kubectl -n elasticsearch-ns apply -f elasticsearch/kibana.yml
@@ -123,11 +121,10 @@ kubectl -n elasticsearch-ns get secret elasticsearch-es-elastic-user -o=jsonpath
 
 ## ACTIVE MQ 5.15.9
 
-1. Create cluster ActiveMq
+Create cluster ActiveMq
 
 ```shell
 kubectl apply -f activemq/activemq.yaml
-
 kubectl -n activemq-ns  get all
 ```
 ![alt text](https://github.com/orsinialberto/k8s-demo/blob/main/graph/activemq-ns.png)
