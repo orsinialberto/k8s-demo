@@ -36,7 +36,7 @@ kubectl -n mysql-ns apply -f mysql/02-mysql-deployment.yaml
 kubectl -n mysql-ns get all
 ```
 
-2. create a pod how to run mysql cli
+2. create a pod where run mysql cli
 ```shell
 kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql.mysql-ns -proot
 ```
